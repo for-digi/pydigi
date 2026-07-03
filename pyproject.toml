@@ -28,8 +28,12 @@ classifiers = [
 dependencies = ["pyserial>=3.0,<4"]
 
 [project.optional-dependencies]
-test = ["pytest>=7.0,<8", "PyYAML>=5.1,<6"]
-hil = ["PyYAML>=5.1,<6"]
+# PyYAML must be >=6: the 5.x sdist (5.4.1) fails to build against modern
+# Cython/setuptools ('cython_sources' AttributeError), which broke CI on every
+# interpreter without a prebuilt 5.4.1 wheel (3.10+, macOS, Windows). 6.0.x has
+# wheels for all supported Pythons and builds cleanly.
+test = ["pytest>=7.0,<10", "PyYAML>=6,<7"]
+hil = ["PyYAML>=6,<7"]
 
 [project.urls]
 Homepage = "https://github.com/for-digi/pydigi"
