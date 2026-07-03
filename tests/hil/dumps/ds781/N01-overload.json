@@ -1,0 +1,18 @@
+{
+  "case_id": "N01-overload",
+  "title": "Overload beyond capacity is handled",
+  "polarity": "negative",
+  "model": "ds781",
+  "port": "/dev/cu.usbserial-111420",
+  "recorded_at": "2026-07-03T21:32:34",
+  "frames": [
+    {
+      "t": 0.0,
+      "error": "No response from scale"
+    },
+    {
+      "t": 2.66,
+      "error": "No response from scale"
+    }
+  ]
+}

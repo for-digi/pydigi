@@ -1,0 +1,22 @@
+# Virtual environments
+.virtualenv/
+.venv/
+venv/
+
+# Build artifacts
+build/
+dist/
+*.egg-info/
+*.egg
+
+# Byte-compiled / caches
+__pycache__/
+*.py[cod]
+.pytest_cache/
+.tox/
+.coverage
+htmlcov/
+
+# OS / editor cruft
+.DS_Store
+*.swp

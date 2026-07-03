@@ -1,0 +1,221 @@
+# HIL case matrix for the DIGI DS-781.
+#
+# This file *declares* the hardware test scenarios. It is consumed by:
+#   * scripts/hil_record.py  — walks you through each case with timed prompts,
+#                              records the real frames, and writes a dump.
+#   * tests/hil/test_replay_dumps.py — replays recorded dumps through the parser
+#                              in the normal (hardware-free) suite as a
+#                              regression corpus.
+#
+# See TESTING.md for the full workflow and the expectation vocabulary.
+#
+# ---------------------------------------------------------------------------
+# Reference weights you own. EDIT these to the masses you actually have; cases
+# refer to them by name, so the matrix adapts to your kit.
+weights:
+  small: 0.040     # kg
+  medium: 0.320
+  large: 1.112
+  heavy: 2.068
+
+# Defaults applied to every case unless the case overrides them.
+defaults:
+  tolerance_kg: 0.02
+  settle_seconds: 4     # time given to the operator to comply with an instruction
+  record_seconds: 3     # length of each capture window
+  record_hz: 10         # polls per second while recording
+
+meta:
+  model: ds781
+  max_weight_kg: 30.0
+
+# ---------------------------------------------------------------------------
+# Step vocabulary (the recorder shows the whole plan first, then walks each
+# step; you press Enter to confirm each one — there is no countdown):
+#   - {say: "..."}              an operator action; press Enter when done
+#   - {say: "...", record: N}   press Enter to start, then capture frames for N s
+#
+# Expectation vocabulary (checked against the captured frames):
+#   stable: bool                 last reading is_stable == value
+#   is_net: bool / is_zero: bool last reading flag == value
+#   gross_kg: {near: X, tol: Y}  |last gross - X| <= Y   (X may be {weight: name})
+#   net_kg:   {near: X, tol: Y}
+#   tare_kg_gt: X                last tare > X
+#   total_price_consistent: true last total == net x unit price (per base)
+#   unit_price_absent: true      last unit price is None or 0
+#   any: {attr: value}           at least one captured frame has attr == value
+#   all: {attr: value}           every captured frame has attr == value
+#   varies_kg_gt: X              (max-min) of gross over the window > X
+#   min_valid_frames: N          at least N frames had a numeric gross
+#   no_parseable_frames: true    the scale sent nothing valid (e.g. overload)
+#   any_of: [ {..}, {..} ]       passes if ANY listed sub-expectation holds
+#
+# Case-level flags:
+#   polarity: positive | negative
+#   requires_weight: name        resolves {weight: name}; shown as a prerequisite
+#   requires_plu: true           skip if the scale has no unit price programmed
+#   prerequisites: [ "..." ]     extra things to gather (e.g. an empty container)
+#   optional: true               operator may skip (e.g. overload)
+# ---------------------------------------------------------------------------
+
+cases:
+
+  # A synthetic case with a committed dump (built from the datasheet example
+  # frame). It needs no hardware and exists so the record->replay pipeline is
+  # exercised in CI and the dump format is documented. Real cases follow.
+  - id: EXAMPLE-synthetic
+    title: Synthetic datasheet frame (no hardware; validates the pipeline)
+    polarity: positive
+    synthetic: true
+    tags: [synthetic]
+    steps: []
+    expect:
+      stable: true
+      is_net: true
+      gross_kg: {near: 4.656, tol: 0.001}
+      total_price_consistent: true
+
+  - id: P01-empty-pan
+    title: Empty pan reads zero
+    polarity: positive
+    tags: [baseline, weight]
+    steps:
+      - {say: "Remove EVERYTHING from the pan and cancel any tare (ZERO/CLEAR)", wait: 4}
+      - {say: "Hold steady — recording the empty pan", record: 3}
+    expect:
+      stable: true
+      is_net: false
+      gross_kg: {near: 0.0, tol: 0.02}
+
+  - id: P02-ref-small
+    title: Small reference weight on the pan
+    polarity: positive
+    requires_weight: small
+    tags: [weight]
+    steps:
+      - {say: "Remove everything; cancel tare", wait: 4}
+      - {say: "Place the SMALL reference weight on the pan", wait: 4}
+      - {say: "Hold steady — recording", record: 3}
+    expect:
+      stable: true
+      gross_kg: {near: {weight: small}, tol: 0.02}
+
+  - id: P03-ref-medium
+    title: Medium reference weight on the pan
+    polarity: positive
+    requires_weight: medium
+    tags: [weight]
+    steps:
+      - {say: "Remove everything; cancel tare", wait: 4}
+      - {say: "Place the MEDIUM reference weight on the pan", wait: 4}
+      - {say: "Hold steady — recording", record: 3}
+    expect:
+      stable: true
+      gross_kg: {near: {weight: medium}, tol: 0.02}
+
+  - id: P04-ref-large
+    title: Large reference weight on the pan
+    polarity: positive
+    requires_weight: large
+    tags: [weight]
+    steps:
+      - {say: "Remove everything; cancel tare", wait: 4}
+      - {say: "Place the LARGE reference weight on the pan", wait: 4}
+      - {say: "Hold steady — recording", record: 3}
+    expect:
+      stable: true
+      gross_kg: {near: {weight: large}, tol: 0.02}
+
+  - id: P05-tare-container
+    title: Tare a container, then weigh goods as net
+    polarity: positive
+    requires_weight: small
+    prerequisites:
+      - an empty container
+    tags: [tare]
+    steps:
+      - {say: "Remove everything; cancel tare", wait: 4}
+      - {say: "Place an EMPTY container, then press TARE (NET turns on, re-zeros)", wait: 5}
+      - {say: "Leaving the container, add the SMALL weight INTO it", wait: 5}
+      - {say: "Hold steady — recording", record: 3}
+    expect:
+      is_net: true
+      net_kg: {near: {weight: small}, tol: 0.02}
+      tare_kg_gt: 0.0
+
+  - id: P06-pricing
+    title: Total price equals net times unit price
+    polarity: positive
+    requires_weight: medium
+    requires_plu: true
+    tags: [price]
+    steps:
+      - {say: "Remove everything; cancel tare", wait: 4}
+      - {say: "Select a PLU / unit price, then place the MEDIUM weight", wait: 5}
+      - {say: "Hold steady — recording", record: 3}
+    expect:
+      stable: true
+      total_price_consistent: true
+
+  - id: P07-continuous-ramp
+    title: Continuous reading tracks a varying load
+    polarity: positive
+    tags: [stream]
+    steps:
+      - {say: "Remove everything; cancel tare", wait: 4}
+      - {say: "Place a load and keep SLOWLY varying it (pour in/out) while recording", record: 8}
+    expect:
+      varies_kg_gt: 0.05
+      min_valid_frames: 20
+
+  - id: N01-overload
+    title: Overload beyond capacity is handled
+    polarity: negative
+    optional: true
+    tags: [overflow]
+    # The DS-781 does not answer ENQ while grossly overloaded (it goes silent);
+    # some units instead emit an OF frame. Accept either as correct behaviour.
+    steps:
+      - {say: "If SAFE, place a load heavier than the scale max (>30 kg); otherwise skip"}
+      - {say: "Hold — recording overload", record: 3}
+    expect:
+      any_of:
+        - {any: {weight_overflow: true}}   # unit emits an overflow frame
+        - {no_parseable_frames: true}       # unit stays silent under overload
+
+  - id: N02-negative-net
+    title: Removing a tared container yields negative net
+    polarity: negative
+    prerequisites:
+      - an empty container
+    tags: [tare, negative]
+    steps:
+      - {say: "Remove everything; cancel tare", wait: 4}
+      - {say: "Place a container and press TARE (NET on)", wait: 5}
+      - {say: "Now REMOVE the container from the pan", wait: 4}
+      - {say: "Hold — recording", record: 3}
+    expect:
+      is_net: true
+      any: {is_negative: true}
+
+  - id: N03-motion-unstable
+    title: A moving load reads as not-stable
+    polarity: negative
+    tags: [stability]
+    steps:
+      - {say: "Remove everything; cancel tare", wait: 4}
+      - {say: "Place a load and keep it MOVING (press/jiggle) throughout", record: 4}
+    expect:
+      any: {is_stable: false}
+
+  - id: N04-no-plu
+    title: With no PLU, prices are absent
+    polarity: negative
+    requires_weight: medium
+    tags: [price]
+    steps:
+      - {say: "Clear any PLU / set unit price to zero on the scale", wait: 5}
+      - {say: "Place the MEDIUM weight", wait: 4}
+      - {say: "Hold steady — recording", record: 3}
+    expect:
+      unit_price_absent: true

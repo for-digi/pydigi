@@ -1,0 +1,121 @@
+{
+  "case_id": "EXAMPLE-synthetic",
+  "title": "Synthetic datasheet frame (no hardware; validates the pipeline)",
+  "polarity": "positive",
+  "model": "ds781",
+  "port": "synthetic",
+  "recorded_at": "2026-07-03T17:31:51",
+  "synthetic": true,
+  "frames": [
+    {
+      "t": 0.0,
+      "raw_hex": "42420d3030332e3435360d3430312e3230300d5530312e3530300d543030352e3138340d0a",
+      "parsed": {
+        "weight_net_kg": 3.456,
+        "weight_tare_kg": 1.2,
+        "weight_gross_kg": 4.656,
+        "unit_price": 1.5,
+        "total_price": 5.184,
+        "price_base": "$/kg",
+        "is_stable": true,
+        "is_net": true,
+        "is_zero": false,
+        "is_negative": false,
+        "weight_overflow": false,
+        "weight_underflow": false,
+        "total_price_overflow": false,
+        "status_flag": 66,
+        "weight_condition_flag": 66,
+        "raw_hex": "42420d3030332e3435360d3430312e3230300d5530312e3530300d543030352e3138340d0a"
+      }
+    },
+    {
+      "t": 0.1,
+      "raw_hex": "42420d3030332e3435360d3430312e3230300d5530312e3530300d543030352e3138340d0a",
+      "parsed": {
+        "weight_net_kg": 3.456,
+        "weight_tare_kg": 1.2,
+        "weight_gross_kg": 4.656,
+        "unit_price": 1.5,
+        "total_price": 5.184,
+        "price_base": "$/kg",
+        "is_stable": true,
+        "is_net": true,
+        "is_zero": false,
+        "is_negative": false,
+        "weight_overflow": false,
+        "weight_underflow": false,
+        "total_price_overflow": false,
+        "status_flag": 66,
+        "weight_condition_flag": 66,
+        "raw_hex": "42420d3030332e3435360d3430312e3230300d5530312e3530300d543030352e3138340d0a"
+      }
+    },
+    {
+      "t": 0.2,
+      "raw_hex": "42420d3030332e3435360d3430312e3230300d5530312e3530300d543030352e3138340d0a",
+      "parsed": {
+        "weight_net_kg": 3.456,
+        "weight_tare_kg": 1.2,
+        "weight_gross_kg": 4.656,
+        "unit_price": 1.5,
+        "total_price": 5.184,
+        "price_base": "$/kg",
+        "is_stable": true,
+        "is_net": true,
+        "is_zero": false,
+        "is_negative": false,
+        "weight_overflow": false,
+        "weight_underflow": false,
+        "total_price_overflow": false,
+        "status_flag": 66,
+        "weight_condition_flag": 66,
+        "raw_hex": "42420d3030332e3435360d3430312e3230300d5530312e3530300d543030352e3138340d0a"
+      }
+    },
+    {
+      "t": 0.3,
+      "raw_hex": "42420d3030332e3435360d3430312e3230300d5530312e3530300d543030352e3138340d0a",
+      "parsed": {
+        "weight_net_kg": 3.456,
+        "weight_tare_kg": 1.2,
+        "weight_gross_kg": 4.656,
+        "unit_price": 1.5,
+        "total_price": 5.184,
+        "price_base": "$/kg",
+        "is_stable": true,
+        "is_net": true,
+        "is_zero": false,
+        "is_negative": false,
+        "weight_overflow": false,
+        "weight_underflow": false,
+        "total_price_overflow": false,
+        "status_flag": 66,
+        "weight_condition_flag": 66,
+        "raw_hex": "42420d3030332e3435360d3430312e3230300d5530312e3530300d543030352e3138340d0a"
+      }
+    },
+    {
+      "t": 0.4,
+      "raw_hex": "42420d3030332e3435360d3430312e3230300d5530312e3530300d543030352e3138340d0a",
+      "parsed": {
+        "weight_net_kg": 3.456,
+        "weight_tare_kg": 1.2,
+        "weight_gross_kg": 4.656,
+        "unit_price": 1.5,
+        "total_price": 5.184,
+        "price_base": "$/kg",
+        "is_stable": true,
+        "is_net": true,
+        "is_zero": false,
+        "is_negative": false,
+        "weight_overflow": false,
+        "weight_underflow": false,
+        "total_price_overflow": false,
+        "status_flag": 66,
+        "weight_condition_flag": 66,
+        "raw_hex": "42420d3030332e3435360d3430312e3230300d5530312e3530300d543030352e3138340d0a"
+      }
+    }
+  ]
+}

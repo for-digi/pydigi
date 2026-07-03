@@ -1,0 +1,47 @@
+[build-system]
+requires = ["setuptools>=61.0", "wheel"]
+build-backend = "setuptools.build_meta"
+
+[project]
+name = "pydigi"
+dynamic = ["version"]
+description = "Read weight, price and status from DIGI scales over RS-232."
+readme = "README.md"
+requires-python = ">=3.8"
+license = { text = "MIT" }
+authors = [{ name = "Pavel Kim", email = "hello@pavelkim.com" }]
+keywords = ["digi", "scale", "rs232", "serial", "weight", "ds-781", "measuring", "pos", "point-of-sale"]
+classifiers = [
+    "Development Status :: 3 - Alpha",
+    "Intended Audience :: Developers",
+    "License :: OSI Approved :: MIT License",
+    "Operating System :: OS Independent",
+    "Programming Language :: Python :: 3",
+    "Programming Language :: Python :: 3.8",
+    "Programming Language :: Python :: 3.9",
+    "Programming Language :: Python :: 3.10",
+    "Programming Language :: Python :: 3.11",
+    "Programming Language :: Python :: 3.12",
+    "Programming Language :: Python :: 3.13",
+    "Topic :: System :: Hardware :: Hardware Drivers",
+]
+dependencies = ["pyserial>=3.0,<4"]
+
+[project.optional-dependencies]
+test = ["pytest>=7.0,<8", "PyYAML>=5.1,<6"]
+hil = ["PyYAML>=5.1,<6"]
+
+[project.urls]
+Homepage = "https://github.com/for-digi/pydigi"
+
+[project.scripts]
+pydigi = "pydigi.cli:main"
+
+[tool.setuptools.packages.find]
+include = ["pydigi", "pydigi.*"]
+
+[tool.setuptools.dynamic]
+version = { attr = "pydigi.version.__version__" }
+
+[tool.pytest.ini_options]
+testpaths = ["tests"]
