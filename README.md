@@ -1,5 +1,9 @@
 # PyDIGI — read DIGI scales from Python
 
+[![PyPI](https://img.shields.io/pypi/v/pydigi.svg)](https://pypi.org/project/pydigi/)
+[![Python versions](https://img.shields.io/pypi/pyversions/pydigi.svg)](https://pypi.org/project/pydigi/)
+[![License: MIT](https://img.shields.io/badge/license-MIT-blue.svg)](LICENSE)
+
 `pydigi` reads weight, price and status from DIGI retail scales over RS-232.
 
 - **Supported models:** DIGI DS-781 (Type B / Standard command protocol).
@@ -11,13 +15,16 @@
 ## Install
 
 ```bash
-pip install .                 # library + pyserial
-pip install '.[test]'         # + pytest, PyYAML (to run the test suite)
-pip install '.[hil]'          # + PyYAML (for the hardware-in-the-loop tooling)
+pip install pydigi
 ```
 
-Or build a wheel/sdist (see [Development](#development)) and
-`pip install dist/pydigi-*.whl`. Not published to PyPI.
+That pulls in pyserial. For development — running the tests or the
+hardware-in-the-loop tooling — install from a checkout with the extras:
+
+```bash
+pip install -e '.[test]'      # + pytest, PyYAML (run the suite)
+pip install -e '.[hil]'       # + PyYAML (the HIL recorder)
+```
 
 ## Quick start
 
@@ -47,8 +54,10 @@ returns a ready scale and is also a context manager.
 | `weight_overflow` `weight_underflow` `total_price_overflow` | range flags |
 | `raw_hex` | the source frame, for diagnostics |
 
-Values the scale did not send (overflow, underflow, no PLU) are **`None`**,
-never a fake `0.0`. `reading.as_dict()` gives a JSON-friendly view.
+A weight the scale can't report (overflow / underflow) comes back as **`None`**,
+never a fake `0.0`. Prices are `None` only when the field is blank (e.g. total
+price during an overflow); with no PLU the scale sends real zeros, so they read
+`0.0`. `reading.as_dict()` gives a JSON-friendly view.
 
 ## Continuous reading & change-watch
 
@@ -163,6 +172,12 @@ make docker-build   # same, isolated in Docker
 
 Testing (hardware-free **and** on a real scale) is documented in
 [TESTING.md](TESTING.md); architecture in [DESIGN.md](DESIGN.md).
+
+## Vibe-code disclosure
+
+This library is written heavily with Claude. The design is decided upon by the initial human-author. All hands-on tests are conducted by a human-operator.
+
+The human-conducted code review (HCCR) is an optimisation of a sort. It will be done in the right time.
 
 ## License
 
