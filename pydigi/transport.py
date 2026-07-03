@@ -12,7 +12,7 @@ interface; nothing above the transport needs to change.
 from abc import ABC, abstractmethod
 
 from .config import SerialConfig
-from .exceptions import TransportError, ScaleTimeout
+from .exceptions import TransportError
 
 
 class Transport(ABC):

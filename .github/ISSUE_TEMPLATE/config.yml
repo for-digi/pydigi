@@ -1,0 +1,8 @@
+blank_issues_enabled: false
+contact_links:
+  - name: Question or usage help
+    url: https://github.com/for-digi/pydigi/discussions
+    about: For "how do I..." questions and general discussion, please use Discussions.
+  - name: Design & extensibility rationale
+    url: https://github.com/for-digi/pydigi/blob/master/DESIGN.md
+    about: The architecture, protocol notes, and how to add a model/protocol/transport may already answer your question.

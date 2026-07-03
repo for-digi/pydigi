@@ -32,8 +32,9 @@ meta:
 # ---------------------------------------------------------------------------
 # Step vocabulary (the recorder shows the whole plan first, then walks each
 # step; you press Enter to confirm each one — there is no countdown):
-#   - {say: "..."}              an operator action; press Enter when done
-#   - {say: "...", record: N}   press Enter to start, then capture frames for N s
+#   - say: "..."           an operator action; press Enter when done
+#   - say: "..."           a capture step; press Enter to start, then record
+#     record: N            frames for N seconds
 #
 # Expectation vocabulary (checked against the captured frames):
 #   stable: bool                 last reading is_stable == value
@@ -80,8 +81,10 @@ cases:
     polarity: positive
     tags: [baseline, weight]
     steps:
-      - {say: "Remove EVERYTHING from the pan and cancel any tare (ZERO/CLEAR)", wait: 4}
-      - {say: "Hold steady — recording the empty pan", record: 3}
+      - say: "Remove EVERYTHING from the pan and cancel any tare (ZERO/CLEAR)"
+        wait: 4
+      - say: "Hold steady — recording the empty pan"
+        record: 3
     expect:
       stable: true
       is_net: false
@@ -93,9 +96,12 @@ cases:
     requires_weight: small
     tags: [weight]
     steps:
-      - {say: "Remove everything; cancel tare", wait: 4}
-      - {say: "Place the SMALL reference weight on the pan", wait: 4}
-      - {say: "Hold steady — recording", record: 3}
+      - say: "Remove everything; cancel tare"
+        wait: 4
+      - say: "Place the SMALL reference weight on the pan"
+        wait: 4
+      - say: "Hold steady — recording"
+        record: 3
     expect:
       stable: true
       gross_kg: {near: {weight: small}, tol: 0.02}
@@ -106,9 +112,12 @@ cases:
     requires_weight: medium
     tags: [weight]
     steps:
-      - {say: "Remove everything; cancel tare", wait: 4}
-      - {say: "Place the MEDIUM reference weight on the pan", wait: 4}
-      - {say: "Hold steady — recording", record: 3}
+      - say: "Remove everything; cancel tare"
+        wait: 4
+      - say: "Place the MEDIUM reference weight on the pan"
+        wait: 4
+      - say: "Hold steady — recording"
+        record: 3
     expect:
       stable: true
       gross_kg: {near: {weight: medium}, tol: 0.02}
@@ -119,9 +128,12 @@ cases:
     requires_weight: large
     tags: [weight]
     steps:
-      - {say: "Remove everything; cancel tare", wait: 4}
-      - {say: "Place the LARGE reference weight on the pan", wait: 4}
-      - {say: "Hold steady — recording", record: 3}
+      - say: "Remove everything; cancel tare"
+        wait: 4
+      - say: "Place the LARGE reference weight on the pan"
+        wait: 4
+      - say: "Hold steady — recording"
+        record: 3
     expect:
       stable: true
       gross_kg: {near: {weight: large}, tol: 0.02}
@@ -134,10 +146,14 @@ cases:
       - an empty container
     tags: [tare]
     steps:
-      - {say: "Remove everything; cancel tare", wait: 4}
-      - {say: "Place an EMPTY container, then press TARE (NET turns on, re-zeros)", wait: 5}
-      - {say: "Leaving the container, add the SMALL weight INTO it", wait: 5}
-      - {say: "Hold steady — recording", record: 3}
+      - say: "Remove everything; cancel tare"
+        wait: 4
+      - say: "Place an EMPTY container, then press TARE (NET turns on, re-zeros)"
+        wait: 5
+      - say: "Leaving the container, add the SMALL weight INTO it"
+        wait: 5
+      - say: "Hold steady — recording"
+        record: 3
     expect:
       is_net: true
       net_kg: {near: {weight: small}, tol: 0.02}
@@ -150,9 +166,12 @@ cases:
     requires_plu: true
     tags: [price]
     steps:
-      - {say: "Remove everything; cancel tare", wait: 4}
-      - {say: "Select a PLU / unit price, then place the MEDIUM weight", wait: 5}
-      - {say: "Hold steady — recording", record: 3}
+      - say: "Remove everything; cancel tare"
+        wait: 4
+      - say: "Select a PLU / unit price, then place the MEDIUM weight"
+        wait: 5
+      - say: "Hold steady — recording"
+        record: 3
     expect:
       stable: true
       total_price_consistent: true
@@ -162,8 +181,10 @@ cases:
     polarity: positive
     tags: [stream]
     steps:
-      - {say: "Remove everything; cancel tare", wait: 4}
-      - {say: "Place a load and keep SLOWLY varying it (pour in/out) while recording", record: 8}
+      - say: "Remove everything; cancel tare"
+        wait: 4
+      - say: "Place a load and keep SLOWLY varying it (pour in/out) while recording"
+        record: 8
     expect:
       varies_kg_gt: 0.05
       min_valid_frames: 20
@@ -176,8 +197,9 @@ cases:
     # The DS-781 does not answer ENQ while grossly overloaded (it goes silent);
     # some units instead emit an OF frame. Accept either as correct behaviour.
     steps:
-      - {say: "If SAFE, place a load heavier than the scale max (>30 kg); otherwise skip"}
-      - {say: "Hold — recording overload", record: 3}
+      - say: "If SAFE, place a load heavier than the scale max (>30 kg); otherwise skip"
+      - say: "Hold — recording overload"
+        record: 3
     expect:
       any_of:
         - {any: {weight_overflow: true}}   # unit emits an overflow frame
@@ -190,10 +212,14 @@ cases:
       - an empty container
     tags: [tare, negative]
     steps:
-      - {say: "Remove everything; cancel tare", wait: 4}
-      - {say: "Place a container and press TARE (NET on)", wait: 5}
-      - {say: "Now REMOVE the container from the pan", wait: 4}
-      - {say: "Hold — recording", record: 3}
+      - say: "Remove everything; cancel tare"
+        wait: 4
+      - say: "Place a container and press TARE (NET on)"
+        wait: 5
+      - say: "Now REMOVE the container from the pan"
+        wait: 4
+      - say: "Hold — recording"
+        record: 3
     expect:
       is_net: true
       any: {is_negative: true}
@@ -203,8 +229,10 @@ cases:
     polarity: negative
     tags: [stability]
     steps:
-      - {say: "Remove everything; cancel tare", wait: 4}
-      - {say: "Place a load and keep it MOVING (press/jiggle) throughout", record: 4}
+      - say: "Remove everything; cancel tare"
+        wait: 4
+      - say: "Place a load and keep it MOVING (press/jiggle) throughout"
+        record: 4
     expect:
       any: {is_stable: false}
 
@@ -214,8 +242,11 @@ cases:
     requires_weight: medium
     tags: [price]
     steps:
-      - {say: "Clear any PLU / set unit price to zero on the scale", wait: 5}
-      - {say: "Place the MEDIUM weight", wait: 4}
-      - {say: "Hold steady — recording", record: 3}
+      - say: "Clear any PLU / set unit price to zero on the scale"
+        wait: 5
+      - say: "Place the MEDIUM weight"
+        wait: 4
+      - say: "Hold steady — recording"
+        record: 3
     expect:
       unit_price_absent: true

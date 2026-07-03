@@ -1,0 +1,68 @@
+name: tests
+
+# Runs the hardware-free suite across every supported Python (3.8-3.13) and,
+# for the modern ones, on Linux, Windows, and macOS - proving the
+# cross-platform, all-3.x claim. Everything runs against the in-memory
+# transport, so no scale is needed; the recorded HIL dumps are replayed here too.
+
+on:
+  push:
+    branches:
+      - master
+  pull_request:
+  workflow_dispatch:
+
+permissions:
+  contents: read
+
+concurrency:
+  group: tests-${{ github.ref }}
+  cancel-in-progress: true
+
+jobs:
+  lint:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v6
+      - uses: actions/setup-python@v6
+        with:
+          python-version: "3.13"
+      - run: python -m pip install --upgrade pip pyflakes
+      - run: pyflakes pydigi tests scripts
+
+  test:
+    name: ${{ matrix.os }} / py${{ matrix.python-version }}
+    runs-on: ${{ matrix.os }}
+    strategy:
+      fail-fast: false
+      # The base matrix is the cross-product below: the three modern
+      # interpreters on all three operating systems (3 x 3 = 9 jobs), proving OS
+      # independence. `include:` then appends three more jobs for the older floor
+      # versions (3.8-3.10) on Linux only. Those are Linux-only on purpose:
+      # actions/setup-python has no arm64-macOS builds for 3.8-3.10 (they predate
+      # Apple Silicon), and the pure-Python parsing we test is OS-independent, so
+      # Linux is enough to prove the 3.8 language/stdlib floor. Total: 12 jobs.
+      matrix:
+        os:
+          - ubuntu-latest
+          - windows-latest
+          - macos-latest
+        python-version:
+          - "3.11"
+          - "3.12"
+          - "3.13"
+        include:
+          - os: ubuntu-latest
+            python-version: "3.8"
+          - os: ubuntu-latest
+            python-version: "3.9"
+          - os: ubuntu-latest
+            python-version: "3.10"
+    steps:
+      - uses: actions/checkout@v6
+      - uses: actions/setup-python@v6
+        with:
+          python-version: ${{ matrix.python-version }}
+      - run: python -m pip install --upgrade pip
+      - run: python -m pip install -e '.[test]'
+      - run: python -m pytest -q

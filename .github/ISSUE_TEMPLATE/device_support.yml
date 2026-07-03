@@ -1,0 +1,94 @@
+name: Device support request
+description: Ask for (or offer) support for another DIGI device (a scale, or other RS-232 hardware).
+labels: ["device-support"]
+title: "[DeviceSupport] "
+body:
+  - type: markdown
+    attributes:
+      value: |
+        A device that speaks an already-supported protocol (e.g. Type B) is added
+        as a small `ScaleModel` subclass - data, not code - plus a recorded frame
+        dump for the regression corpus. A brand-new protocol type needs a
+        `Protocol` subclass. See DESIGN.md ("Extending") and TESTING.md (the
+        `scripts/hil_record.py` recorder). The more fields below you can fill in
+        (ideally from the communication datasheet), the faster support can land.
+
+  - type: input
+    id: model
+    attributes:
+      label: Device model
+      placeholder: DIGI DS-782
+    validations:
+      required: true
+
+  - type: input
+    id: kind
+    attributes:
+      label: Device kind
+      placeholder: price-computing scale / bench scale / counter terminal / ...
+    validations:
+      required: false
+
+  - type: dropdown
+    id: protocol
+    attributes:
+      label: Protocol type
+      description: DIGI's RS-232 data transmission format, if known (from the manual).
+      options:
+        - Type B (Standard command) - same as DS-781
+        - Type A
+        - Type C
+        - Other / not sure
+    validations:
+      required: true
+
+  - type: dropdown
+    id: interface
+    attributes:
+      label: Interface
+      options:
+        - RS-232 (serial)
+        - Ethernet / TCP
+        - USB
+        - Not sure
+    validations:
+      required: true
+
+  - type: input
+    id: serial-settings
+    attributes:
+      label: Serial defaults
+      description: Baud / data bits / parity / stop bits / flow control.
+      placeholder: 9600 8N1, no flow control
+    validations:
+      required: false
+
+  - type: input
+    id: capacity
+    attributes:
+      label: Rated capacity (if a scale)
+      placeholder: 15 kg
+    validations:
+      required: false
+
+  - type: textarea
+    id: frame
+    attributes:
+      label: Frame format / datasheet
+      description: >
+        Link to or describe the response frame layout (byte offsets, headers,
+        status/condition flags). A few captured frames as hex are ideal - see
+        scripts/hil_record.py.
+      render: text
+    validations:
+      required: false
+
+  - type: checkboxes
+    id: hardware
+    attributes:
+      label: Testing
+      options:
+        - label: I have this device and can record real frames with scripts/hil_record.py.
+          required: false
+        - label: I'd be willing to help implement or test a model for it.
+          required: false

@@ -1,0 +1,117 @@
+name: Bug report
+description: Something went wrong while reading a DIGI scale.
+labels: ["bug"]
+title: "[Bug] "
+body:
+  - type: markdown
+    attributes:
+      value: |
+        Thanks for filing a bug. pydigi logs at `-v` (INFO) / `-vv` (DEBUG,
+        including raw frame hex), and every `ScaleReading` carries `raw_hex`.
+        A verbose log or the raw frame usually tells the whole story - please
+        include one. It is plain ASCII; redact nothing automatically.
+
+  - type: textarea
+    id: what-happened
+    attributes:
+      label: What happened?
+      description: What did you expect to happen, and what happened instead?
+      placeholder: |
+        Expected: read() to return the weight on the pan.
+        Actual: it raised FrameError after three retries.
+    validations:
+      required: true
+
+  - type: textarea
+    id: command
+    attributes:
+      label: Command or code you ran
+      description: The full CLI command, or a minimal code snippet.
+      render: shell
+      placeholder: pydigi -vv read --port /dev/cu.usbserial-XXXX
+    validations:
+      required: true
+
+  - type: textarea
+    id: log
+    attributes:
+      label: Verbose log or raw frame
+      description: >
+        Re-run with `-vv` and paste the relevant lines, or paste a reading's
+        `raw_hex`. This is the single most useful thing.
+      render: text
+    validations:
+      required: true
+
+  - type: input
+    id: version
+    attributes:
+      label: pydigi version
+      description: Output of `pydigi --version`.
+      placeholder: pydigi 1.0.0
+    validations:
+      required: true
+
+  - type: dropdown
+    id: install-source
+    attributes:
+      label: How did you install it?
+      options:
+        - PyPI (pip install pydigi)
+        - From source (editable / git checkout)
+        - Other (describe below)
+    validations:
+      required: true
+
+  - type: input
+    id: model
+    attributes:
+      label: Scale model
+      placeholder: DIGI DS-781
+    validations:
+      required: true
+
+  - type: input
+    id: adapter
+    attributes:
+      label: USB-serial adapter
+      description: Chipset and/or USB VID:PID if you know it (`system_profiler`/`lsusb`). Adapter quirks are a common cause.
+      placeholder: FTDI FT232 / 0403:6001  (or "built-in RS-232")
+    validations:
+      required: false
+
+  - type: input
+    id: serial-settings
+    attributes:
+      label: Serial settings
+      description: Baud / framing / flow control, if you changed the defaults (9600 8N1, no flow control).
+      placeholder: 9600 8N1
+    validations:
+      required: false
+
+  - type: input
+    id: environment
+    attributes:
+      label: OS and Python
+      placeholder: macOS 14.6 / Python 3.13.2
+    validations:
+      required: true
+
+  - type: input
+    id: related
+    attributes:
+      label: Related issues or PRs
+      description: Reference any related issues/PRs by number; GitHub links them automatically.
+      placeholder: "#42, #57"
+    validations:
+      required: false
+
+  - type: checkboxes
+    id: checks
+    attributes:
+      label: Before submitting
+      options:
+        - label: I searched existing issues and this is not a duplicate.
+          required: true
+        - label: I included a `-vv` log or a raw frame (or explained why I can't).
+          required: true
