@@ -1,9 +1,9 @@
 #!/usr/bin/env bash
 #
-# Build pydigi's sdist + wheel inside Docker and drop them into ./dist on the
-# host. Fully isolated: the host's Python is never used.
+# Build pydigi's wheel inside Docker and drop it into ./dist on the host.
+# Fully isolated: the host's Python is never used.
 #
-#   ./build/docker-build.sh
+#   ./scripts/docker-build.sh
 #
 set -euo pipefail
 

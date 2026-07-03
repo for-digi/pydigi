@@ -5,6 +5,7 @@
     pydigi --port /dev/ttyUSB0 watch --stable-only
     pydigi --port /dev/ttyUSB0 watch --field tare --field unit-price
     pydigi --port /dev/ttyUSB0 watch --all-fields
+    pydigi --port /dev/ttyUSB0 watch --forever --retries 5
     pydigi --port COM3 stream --interval 0.5 --count 10
     pydigi list-models
 
@@ -20,6 +21,7 @@ import sys
 from . import __version__
 from .exceptions import PyDigiError
 from .models import get_model, available_models
+from .scale import PollPolicy
 from .watch import ChangeFilter, Field
 
 # Short CLI names -> ChangeFilter field constants.
@@ -52,6 +54,8 @@ def _build_parser():
     )
     parser.add_argument("--port", help="serial device, e.g. /dev/ttyUSB0 or COM3")
     parser.add_argument("--baudrate", type=int, default=None, help="override baud rate")
+    parser.add_argument("--retries", type=int, default=3,
+                        help="attempts per poll before it counts as a failure (default: 3)")
     parser.add_argument("--json", action="store_true", help="emit readings as JSON lines")
     parser.add_argument(
         "-v", "--verbose", action="count", default=0,
@@ -75,10 +79,16 @@ def _build_parser():
                        help="watch every field, not just weight")
     watch.add_argument("--count", type=int, default=None,
                        help="stop after N reported changes")
+    watch.add_argument("--forever", action="store_true",
+                       help="never stop on errors; keep polling through outages "
+                            "(one note when the device drops, one when it returns)")
 
     stream = sub.add_parser("stream", help="print every reading continuously")
     stream.add_argument("--interval", type=float, default=0.2, help="seconds between polls")
     stream.add_argument("--count", type=int, default=None, help="stop after N readings")
+    stream.add_argument("--forever", action="store_true",
+                        help="never stop on errors; keep polling through outages "
+                             "(one note when the device drops, one when it returns)")
 
     sub.add_parser("list-models", help="list known scale models and exit")
 
@@ -104,7 +114,32 @@ def _emit(reading, as_json):
 
 def _open_scale(args):
     model = get_model(args.model)
-    return model.open(args.port, baudrate=args.baudrate)
+    return model.open(
+        args.port, baudrate=args.baudrate, policy=PollPolicy(retries=args.retries)
+    )
+
+
+class _OutageNotifier:
+    """Edge-triggered status for --forever.
+
+    Emits one 'unresponsive' note when the device stops answering and one
+    'reconnected' note when it comes back, instead of a line per failed poll.
+    """
+
+    def __init__(self, retries):
+        self._retries = retries
+        self._down = False
+
+    def on_error(self, error):
+        if not self._down:
+            self._down = True
+            print("Device unresponsive (%d tries), retrying to connect..."
+                  % self._retries, file=sys.stderr)
+
+    def saw_reading(self):
+        if self._down:
+            self._down = False
+            print("Device reconnected.", file=sys.stderr)
 
 
 def _build_filter(args):
@@ -141,14 +176,26 @@ def main(argv=None):
             if args.command == "read":
                 _emit(scale.read(), args.json)
             elif args.command == "stream":
-                for reading in scale.stream(interval=args.interval, count=args.count):
+                notifier = _OutageNotifier(args.retries) if args.forever else None
+                for reading in scale.stream(
+                    interval=args.interval, count=args.count,
+                    ignore_errors=args.forever,
+                    on_error=(notifier.on_error if notifier else None),
+                ):
+                    if notifier:
+                        notifier.saw_reading()
                     _emit(reading, args.json)
             elif args.command == "watch":
+                notifier = _OutageNotifier(args.retries) if args.forever else None
                 for reading in scale.watch(
                     interval=args.interval,
                     change_filter=_build_filter(args),
                     count=args.count,
+                    ignore_errors=args.forever,
+                    on_error=(notifier.on_error if notifier else None),
                 ):
+                    if notifier:
+                        notifier.saw_reading()
                     _emit(reading, args.json)
     except KeyboardInterrupt:
         print("Interrupted.", file=sys.stderr)

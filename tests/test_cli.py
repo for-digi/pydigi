@@ -120,3 +120,37 @@ def test_unknown_model_is_a_clean_error(capsys):
     rc = cli.main(["--model", "bogus", "--port", "loopback", "read"])
     assert rc == 2
     assert "Unknown scale model" in capsys.readouterr().err
+
+
+def test_forever_survives_outage_and_reconnects(monkeypatch, capsys):
+    # Two silent polls (device down), then two good frames (device back).
+    frame_a = type_b_frame(net="01.000")
+    frame_b = type_b_frame(net="02.000")
+    seq = iter([b"", b"", frame_a, frame_b])
+
+    def responder():
+        try:
+            return next(seq)
+        except StopIteration:
+            return frame_b
+
+    patch_scale(monkeypatch, responder)
+    rc = cli.main(["--port", "loopback", "watch", "--forever",
+                   "--interval", "0", "--count", "2"])
+    assert rc == 0
+    out = capsys.readouterr()
+    readings = [ln for ln in out.out.splitlines() if ln.strip()]
+    assert len(readings) == 2                       # kept going, emitted both
+    assert out.err.lower().count("unresponsive") == 1   # noted once, not per poll
+    assert "reconnected" in out.err.lower()
+
+
+def test_outage_notifier_is_edge_triggered(capsys):
+    notifier = cli._OutageNotifier(retries=5)
+    notifier.on_error(Exception("x"))
+    notifier.on_error(Exception("x"))   # still down -> no second message
+    notifier.saw_reading()              # back up -> one 'reconnected'
+    notifier.saw_reading()              # already up -> no message
+    err = capsys.readouterr().err
+    assert err.count("unresponsive") == 1
+    assert err.count("reconnected") == 1

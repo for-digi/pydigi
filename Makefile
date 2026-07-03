@@ -7,15 +7,15 @@ PYTHON ?= .virtualenv/bin/python
 
 help:
 	@echo "make test          run the hardware-free test suite"
-	@echo "make build         build sdist + wheel locally into ./dist"
-	@echo "make docker-build  build sdist + wheel in Docker into ./dist (isolated)"
+	@echo "make build         build the wheel locally into ./dist"
+	@echo "make docker-build  build the wheel in Docker into ./dist (isolated)"
 	@echo "make clean         remove build artifacts and caches"
 
 test:
 	$(PYTHON) -m pytest
 
 build:
-	$(PYTHON) -m build --sdist --wheel --outdir dist
+	$(PYTHON) -m build --wheel --outdir dist
 
 docker-build:
 	./scripts/docker-build.sh

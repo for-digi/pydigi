@@ -92,7 +92,10 @@ class Scale:
                 return reading
             except (ScaleTimeout, TransportError, FrameError) as error:
                 last_error = error
-                logger.warning(
+                # Per-attempt failures are retry noise (a transient short read or
+                # timeout usually recovers on the next attempt). Log at DEBUG; the
+                # final, exhausted failure is raised for the caller to handle.
+                logger.debug(
                     "Poll attempt %d/%d failed: %s", attempt, policy.retries, error
                 )
                 if attempt < policy.retries and policy.retry_delay:

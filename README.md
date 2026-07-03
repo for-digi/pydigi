@@ -2,28 +2,17 @@
 
 [![PyPI](https://img.shields.io/pypi/v/pydigi.svg)](https://pypi.org/project/pydigi/)
 [![Python versions](https://img.shields.io/pypi/pyversions/pydigi.svg)](https://pypi.org/project/pydigi/)
-[![License: MIT](https://img.shields.io/badge/license-MIT-blue.svg)](LICENSE)
+[![License: MIT](https://img.shields.io/badge/license-MIT-blue.svg)](https://github.com/for-digi/pydigi/blob/master/LICENSE)
 
 `pydigi` reads weight, price and status from DIGI retail scales over RS-232.
 
-- **Supported models:** DIGI DS-781 (Type B / Standard command protocol).
-- **Python:** 3.8+ (see [DESIGN.md §8](DESIGN.md) for why 2.x is out of scope).
-- **Dependency:** [pyserial](https://pypi.org/project/pyserial/) (only for real ports).
-- Layered so more models, protocol types, and transports slot in **without
-  rewrites** — see [Extending](#extending) and [DESIGN.md](DESIGN.md).
+**Supported models:**
+- DIGI DS-781 (Type B / Standard command protocol).
 
 ## Install
 
 ```bash
 pip install pydigi
-```
-
-That pulls in pyserial. For development — running the tests or the
-hardware-in-the-loop tooling — install from a checkout with the extras:
-
-```bash
-pip install -e '.[test]'      # + pytest, PyYAML (run the suite)
-pip install -e '.[hil]'       # + PyYAML (the HIL recorder)
 ```
 
 ## Quick start
@@ -46,12 +35,19 @@ returns a ready scale and is also a context manager.
 
 | Field | Meaning |
 |---|---|
-| `weight_net_kg` / `weight_tare_kg` | net (post-tare) and stored tare weight |
-| `weight_gross_kg` | derived `net + tare` (always consistent) |
-| `unit_price` / `total_price` | price per `price_base`, and net × unit |
+| `weight_net_kg`  | net (post-tare) weight |
+| `weight_tare_kg` | stored tare weight |
+| `weight_gross_kg` | derived `net + tare` |
+| `unit_price` | price per `price_base` |
+| `total_price` | price net x unit |
 | `price_base` | `PriceBase` enum (`$/kg`, `$/100g`, `$/lb`, `$/(1/4)lb`) |
-| `is_stable` `is_net` `is_zero` `is_negative` | condition booleans |
-| `weight_overflow` `weight_underflow` `total_price_overflow` | range flags |
+| `is_stable` | the measurement is not changing|
+| `is_net` | there is tare weight set |
+| `is_zero` | there is no items on the scales |
+| `is_negative` | tare was taken away |
+| `weight_overflow` | too much weight |
+| `weight_underflow` | no plate, or something is wrong with the device |
+| `total_price_overflow` | the computed total price exceeded the field width |
 | `raw_hex` | the source frame, for diagnostics |
 
 A weight the scale can't report (overflow / underflow) comes back as **`None`**,
@@ -62,7 +58,7 @@ price during an overflow); with no PLU the scale sends real zeros, so they read
 ## Continuous reading & change-watch
 
 ```python
-for reading in scale.stream(interval=0.2):          # every poll
+for reading in scale.stream(interval=0.2):
     print(reading.weight_gross_kg)
 ```
 
@@ -83,9 +79,9 @@ ChangeFilter.everything()                                 # any field, flags inc
 For long-running loops, `stream(..., ignore_errors=True, on_error=cb)` keeps
 going through transient timeouts instead of raising.
 
-Runnable examples: [single_reading.py](examples/single_reading.py),
-[continuous_reading.py](examples/continuous_reading.py), and
-[offline_demo.py](examples/offline_demo.py) (no hardware).
+Runnable examples: [single_reading.py](https://github.com/for-digi/pydigi/blob/master/examples/single_reading.py),
+[continuous_reading.py](https://github.com/for-digi/pydigi/blob/master/examples/continuous_reading.py), and
+[offline_demo.py](https://github.com/for-digi/pydigi/blob/master/examples/offline_demo.py) (no hardware).
 
 ## Errors
 
@@ -115,8 +111,8 @@ with DigiDS781.bind(LoopbackTransport(my_frame_bytes)) as scale:
 ```
 
 This is exactly how the test suite runs. A complete, runnable version (which
-synthesises frames) is [examples/offline_demo.py](examples/offline_demo.py); the
-testing workflow is in [TESTING.md](TESTING.md).
+synthesises frames) is [examples/offline_demo.py](https://github.com/for-digi/pydigi/blob/master/examples/offline_demo.py); the
+testing workflow is in [TESTING.md](https://github.com/for-digi/pydigi/blob/master/TESTING.md).
 
 ## Command line
 
@@ -127,6 +123,8 @@ pydigi --port /dev/ttyUSB0 stream --interval 0.5 --count 10
 pydigi --port /dev/ttyUSB0 watch --stable-only        # weight changes only
 pydigi --port /dev/ttyUSB0 watch --field tare --field unit-price
 pydigi --port /dev/ttyUSB0 watch --all-fields
+pydigi --port /dev/ttyUSB0 watch --forever            # never stop; ride out device outages
+pydigi --port /dev/ttyUSB0 --retries 5 read           # retry each poll up to 5 times
 pydigi --model ds781 --port COM3 read                 # -v / -vv for logging
 pydigi list-models
 ```
@@ -157,7 +155,7 @@ to existing code**:
 - **New transport** (TCP bridge, USB HID) — subclass `Transport` and pass it to
   `Model.bind(transport)`.
 
-Details and rationale in [DESIGN.md](DESIGN.md).
+Details and rationale in [DESIGN.md](https://github.com/for-digi/pydigi/blob/master/DESIGN.md).
 
 > `Scale` is not thread-safe — a serial port is a single shared resource. Use one
 > `Scale` per thread, or guard it with your own lock.
@@ -166,12 +164,12 @@ Details and rationale in [DESIGN.md](DESIGN.md).
 
 ```bash
 make test           # hardware-free test suite
-make build          # sdist + wheel into ./dist
+make build          # wheel into ./dist
 make docker-build   # same, isolated in Docker
 ```
 
 Testing (hardware-free **and** on a real scale) is documented in
-[TESTING.md](TESTING.md); architecture in [DESIGN.md](DESIGN.md).
+[TESTING.md](https://github.com/for-digi/pydigi/blob/master/TESTING.md); architecture in [DESIGN.md](https://github.com/for-digi/pydigi/blob/master/DESIGN.md).
 
 ## Vibe-code disclosure
 
@@ -181,4 +179,4 @@ The human-conducted code review (HCCR) is an optimisation of a sort. It will be 
 
 ## License
 
-MIT — see [LICENSE](LICENSE).
+MIT — see [LICENSE](https://github.com/for-digi/pydigi/blob/master/LICENSE).

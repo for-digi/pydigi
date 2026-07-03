@@ -6,4 +6,4 @@ version from ``pydigi.version.__version__`` (see ``[tool.setuptools.dynamic]``),
 and the rest of the code imports it from here. Bump the version in one place.
 """
 
-__version__ = "1.0.1"
+__version__ = "1.1.0"

@@ -2,10 +2,10 @@ name: Release
 
 # Cuts a release when master moves to a version not yet tagged:
 #   read pydigi/version.py -> if v<version> is not already a tag -> test, build
-#   (sdist + wheel), render changelog, create the tag + GitHub release with the
-#   artifacts attached, and publish to PyPI via trusted publishing (OIDC).
-# The PyPI publisher is bound to this workflow file name (release.yml), so do
-# not rename it.
+#   the wheel (pure Python, no sdist), render changelog, create the tag + GitHub
+#   release with the wheel attached, and publish to PyPI via trusted publishing
+#   (OIDC). The PyPI publisher is bound to this workflow file name (release.yml),
+#   so do not rename it.
 
 on:
   push:
@@ -56,10 +56,10 @@ jobs:
           python -m pip install -e '.[test]' build twine
           python -m pytest -q
 
-      - name: Build sdist and wheel
+      - name: Build the wheel
         if: steps.gate.outputs.should_release == 'true'
         run: |
-          python -m build              # -> dist/*.tar.gz and dist/*.whl
+          python -m build --wheel      # pure Python, no sdist -> dist/*.whl
           python -m twine check dist/*
 
       - name: Render changelog from commits since the last tag
@@ -81,7 +81,6 @@ jobs:
           body_path: .changelog_long.md
           files: |
             dist/*.whl
-            dist/*.tar.gz
 
       - name: Publish to PyPI (trusted publishing)
         if: steps.gate.outputs.should_release == 'true'
